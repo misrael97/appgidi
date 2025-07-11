@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutHorario"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA">
+
+  <!-- Encabezado -->
+  <LinearLayout
+      android:id="@+id/headerLayout"
+      android:layout_width="0dp"
+      android:layout_height="60dp"
+      android:orientation="horizontal"
+      android:padding="16dp"
+      android:gravity="center_vertical"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent">
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/vector_calendario"
+        android:contentDescription="Ícono de calendario"/>
+
+    <TextView
+        android:id="@+id/tvHorarioTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:fontFamily="@font/poppins_semibold"
+        android:text="Horario"
+        android:textColor="@color/black"
+        android:textSize="24sp" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/vector_ajustes"
+        android:contentDescription="Ícono de configuración"/>
+  </LinearLayout>
+
+  <!-- Tabs de días -->
+  <HorizontalScrollView
+      android:id="@+id/dayTabsScroll"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:fillViewport="true"
+      android:scrollbars="none"
+      app:layout_constraintTop_toBottomOf="@+id/headerLayout"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent">
+
+    <LinearLayout
+        android:id="@+id/dayTabsLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center"
+        >
+
+      <!-- Botones para cada día -->
+
+      <Button
+          android:id="@+id/btnLunes"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:background="@drawable/vista_horario"
+          android:fontFamily="@font/poppins"
+          android:padding="8dp"
+          android:text="Lunes"
+          android:textColor="#ffffff"
+          android:textSize="16sp" />
+
+      <Button
+          android:id="@+id/btnMartes"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:background="@drawable/vista_horario"
+          android:fontFamily="@font/poppins"
+          android:text="Martes"
+          android:textColor="#FFFFFF"
+          android:textSize="16sp" />
+
+      <Button
+          android:id="@+id/btnMiercoles"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:background="@drawable/vista_horario"
+          android:fontFamily="@font/poppins"
+          android:text="Miércoles"
+          android:textColor="#FFFFFF"
+          android:textSize="16sp" />
+
+
+      <Button
+          android:id="@+id/btnJueves"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:background="@drawable/vista_horario"
+          android:fontFamily="@font/poppins"
+          android:text="Jueves"
+          android:textColor="#FFFFFF"
+          android:textSize="16sp" />
+
+      <Button
+          android:id="@+id/btnViernes"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:background="@drawable/vista_horario"
+          android:fontFamily="@font/poppins"
+          android:text="Viernes"
+          android:textColor="#FFFFFF"
+          android:textSize="16sp" />
+    </LinearLayout>
+  </HorizontalScrollView>
+
+  <!-- Lista de materias -->
+
+  <!-- Barra de navegación inferior -->
+
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerMaterias"
+      android:layout_marginRight="30dp"
+      android:layout_marginLeft="30dp"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginTop="20dp"
+
+      app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/dayTabsScroll"
+      app:layout_constraintVertical_bias="0.0"
+      android:background="@drawable/rounded_spinner"
+
+      />
+
+  <com.google.android.material.bottomnavigation.BottomNavigationView
+      android:id="@+id/bottomNav"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="#FAFAFA"
+      app:labelVisibilityMode="labeled"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:menu="@menu/bottom_nav_menu"
+      android:layout_gravity="bottom"
+      app:itemIconTint="@color/nav_item_color"
+      app:itemTextColor="@color/nav_item_color"
+      />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
