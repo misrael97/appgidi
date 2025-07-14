@@ -71,7 +71,7 @@ public class HorarioActivity extends AppCompatActivity {
         String authHeader = "Bearer " + token;
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.1.10:3000/")
+                .baseUrl("http://192.168.1.6:3000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

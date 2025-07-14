@@ -1,5 +1,6 @@
 package com.example.appgidi.network;
 
+import com.example.appgidi.models.GradesResponse;
 import com.example.appgidi.models.GroupDataResponse;
 import com.example.appgidi.models.LoginResponse;
 import com.example.appgidi.models.User;
@@ -20,4 +21,18 @@ public interface ApiService {
             @Path("groupId") int groupId,
             @Header("Authorization") String authHeader
     );
+
+    @GET("api/grades/student/{studentId}")
+    Call<GradesResponse> getAllStudentGrades(
+            @Path("studentId") int studentId,
+            @Header("Authorization") String token
+    );
+
+    @GET("api/grades/student/{studentId}/{subjectId}")
+    Call<GradesResponse> getStudentGradesBySubject(
+            @Path("studentId") int studentId,
+            @Path("subjectId") int subjectId,
+            @Header("Authorization") String token
+    );
+
 }

@@ -51,11 +51,10 @@
     <!-- Filtro de materia -->
     <LinearLayout
         android:id="@+id/filterLayout"
-        android:layout_width="200dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-
         android:layout_marginTop="20dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
@@ -70,16 +69,15 @@
             android:layout_marginStart="10dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
-
             >
 
             <Spinner
-
                 android:id="@+id/spinnerMateria"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:textAlignment="center"
+                android:textAlignment="textEnd"
                 android:spinnerMode="dropdown"
+
                 />
         </androidx.cardview.widget.CardView>
     </LinearLayout>
