@@ -21,13 +21,13 @@
             android:id="@+id/tvProfesor"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Igmar Salazar Rodríguez"
-            android:textSize="14sp"
-            android:textColor="#000000"
-            android:fontFamily="@font/poppins"
-            android:gravity="start"
             android:layout_marginTop="12dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/poppins_medium"
+            android:gravity="start"
+            android:text="Igmar Salazar Rodríguez"
+            android:textColor="#000000"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <!-- Unidad y calificación -->
@@ -48,19 +48,19 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_medium"
                     android:text="Unidad"
                     android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/poppins" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvUnidad"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
                     android:text="1"
                     android:textColor="#000000"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/poppins_medium"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -73,19 +73,19 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_medium"
                     android:text="Calificación"
                     android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/poppins" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvCalificacion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
                     android:text="9.6"
                     android:textColor="#D32F2F"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/poppins_medium"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>

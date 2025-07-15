@@ -6,6 +6,8 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -44,6 +46,22 @@ public class HorarioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_horario);
+        ImageView iconAjustes = findViewById(R.id.iconAjustes);
+
+        iconAjustes.setOnClickListener(view -> {
+            PopupMenu popup = new PopupMenu(HorarioActivity.this, view);
+            popup.getMenuInflater().inflate(R.menu.menu_ajustes, popup.getMenu());
+
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.menu_cerrar_sesion) {
+                    cerrarSesion();
+                    return true;
+                }
+                return false;
+            });
+
+            popup.show();
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutHorario), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -61,6 +79,15 @@ public class HorarioActivity extends AppCompatActivity {
         obtenerDatosDesdeAPI();
     }
 
+    private void cerrarSesion() {
+        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
+        prefs.edit().clear().apply();
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
     private void obtenerDatosDesdeAPI() {
         SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
         String token = prefs.getString("jwt_token", null);

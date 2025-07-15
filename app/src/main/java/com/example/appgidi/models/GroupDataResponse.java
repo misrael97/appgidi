@@ -1,25 +1,29 @@
 package com.example.appgidi.models;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class GroupDataResponse {
     private String status;
+    private String msg;
     private Data data;
 
-    public String getStatus() {
-        return status;
+    public Data getData() {
+        return data;
     }
 
-    public List<TeacherSubjectGroup> getTeacherSubjectGroups() {
-        return data != null ? data.getTeacherSubjectGroups() : null;
-    }
-
-    // ✅ Clase interna ahora es pública y con getters
-    public static class Data {
+    public class Data {
+        @SerializedName("teacherSubjectGroups")
         private List<TeacherSubjectGroup> teacherSubjectGroups;
 
         public List<TeacherSubjectGroup> getTeacherSubjectGroups() {
             return teacherSubjectGroups;
         }
+    }
+
+    public List<TeacherSubjectGroup> getTeacherSubjectGroups() {
+        return data != null ? data.getTeacherSubjectGroups() : new ArrayList<>();
     }
 }
