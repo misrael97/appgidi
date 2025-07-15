@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.appgidi.adapters.AttendanceAdapter;
 import com.example.appgidi.models.Attendance;
@@ -48,6 +49,8 @@ public class AsistenciaActivity extends AppCompatActivity {
     private AttendanceAdapter adapter;
     private List<Subject> materias = new ArrayList<>();
     private int selectedMes = 0, selectedSubjectId = -1;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +60,7 @@ public class AsistenciaActivity extends AppCompatActivity {
         spinnerMes = findViewById(R.id.spinnerMes);
         spinnerMateria = findViewById(R.id.spinnerMateria);
         recyclerView = findViewById(R.id.recyclerAsistencia);
-
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshAsistencia);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AttendanceAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
@@ -81,8 +84,14 @@ public class AsistenciaActivity extends AppCompatActivity {
             popup.show();
         });
 
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            cargarMaterias();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+
 
     }
+
     private void cerrarSesion() {
         SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
         prefs.edit().clear().apply();

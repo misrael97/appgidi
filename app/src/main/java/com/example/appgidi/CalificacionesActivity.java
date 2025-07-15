@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.appgidi.adapters.GradeAdapter;
 import com.example.appgidi.models.Grade;
 import com.example.appgidi.models.GradesResponse;
@@ -39,6 +41,8 @@ public class CalificacionesActivity extends AppCompatActivity {
     private List<Grade> todasLasCalificaciones = new ArrayList<>();
     private List<Subject> materias = new ArrayList<>();
     private ArrayAdapter<Subject> spinnerAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +54,14 @@ public class CalificacionesActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new GradeAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
-
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshCalificaciones);
         obtenerCalificacionesDesdeAPI();
         setupBottomNav(R.id.nav_calificaciones);
 
-
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            obtenerCalificacionesDesdeAPI();
+            swipeRefreshLayout.setRefreshing(false);
+        });
 
         iconAjustes.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(CalificacionesActivity.this, view);
@@ -108,6 +115,7 @@ public class CalificacionesActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<GradesResponse> call, Throwable t) {
+
                 Toast.makeText(CalificacionesActivity.this, "Error al cargar calificaciones", Toast.LENGTH_SHORT).show();
             }
         });

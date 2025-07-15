@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.appgidi.adapters.TeacherGroupAdapter;
 import com.example.appgidi.models.GroupDataResponse;
@@ -40,6 +41,8 @@ public class HorarioActivity extends AppCompatActivity {
     private TeacherGroupAdapter adapter;
     private List<TeacherSubjectGroup> listaCompleta = new ArrayList<>();
     private String diaActual = "Monday"; // Día por defecto
+    private SwipeRefreshLayout swipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,7 @@ public class HorarioActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_horario);
         ImageView iconAjustes = findViewById(R.id.iconAjustes);
-
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshHorario);
         iconAjustes.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(HorarioActivity.this, view);
             popup.getMenuInflater().inflate(R.menu.menu_ajustes, popup.getMenu());
@@ -61,6 +64,12 @@ public class HorarioActivity extends AppCompatActivity {
             });
 
             popup.show();
+        });
+
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshHorario);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            obtenerDatosDesdeAPI();
+            swipeRefreshLayout.setRefreshing(false);
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutHorario), (v, insets) -> {

@@ -83,18 +83,25 @@
         </androidx.cardview.widget.CardView>
     </LinearLayout>
     <!-- RecyclerView de calificaciones -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerCalificaciones"
-        android:layout_marginRight="30dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginTop="15dp"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshCalificaciones"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/rounded_spinner"
-        app:layout_constraintTop_toBottomOf="@id/filterLayout"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="30dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/filterLayout">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCalificaciones"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="30dp"
+            android:background="@drawable/rounded_spinner" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Barra de navegación inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

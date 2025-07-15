@@ -133,22 +133,27 @@
 
   <!-- Barra de navegación inferior -->
 
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/recyclerMaterias"
-      android:layout_marginRight="30dp"
-      android:layout_marginLeft="30dp"
+  <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+      android:id="@+id/swipeRefreshHorario"
       android:layout_width="0dp"
       android:layout_height="0dp"
+      android:layout_marginStart="30dp"
       android:layout_marginTop="20dp"
-      app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+      android:layout_marginEnd="30dp"
+      app:layout_constraintBottom_toTopOf="@id/bottomNav"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.0"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/dayTabsScroll"
-      app:layout_constraintVertical_bias="0.0"
-      android:background="@drawable/rounded_spinner"
+      app:layout_constraintVertical_bias="0.0">
 
-      />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerMaterias"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/rounded_spinner" />
+  </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
   <com.google.android.material.bottomnavigation.BottomNavigationView
       android:id="@+id/bottomNav"

@@ -116,20 +116,26 @@
 
     <!-- Barra de navegación inferior -->
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerAsistencia"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshAsistencia"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginLeft="30dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="15dp"
-        android:layout_marginRight="30dp"
-        android:background="@drawable/rounded_spinner"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/filterLayout"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@id/filterLayout">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerAsistencia"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="30dp"
+            android:background="@drawable/rounded_spinner" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
