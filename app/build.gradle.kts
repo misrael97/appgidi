@@ -12,8 +12,16 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        applicationId = "com.example.SmartEntry"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val variantName = name
+            output.outputFileName = "SmartEntry-$variantName.apk"
+        }
     }
 
     buildTypes {

@@ -106,12 +106,7 @@ public class HorarioActivity extends AppCompatActivity {
         }
         String authHeader = "Bearer " + token;
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.1.6:3000/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        ApiService api = retrofit.create(ApiService.class);
+        ApiService api = ApiClient.getClient().create(ApiService.class);
         api.getTeacherGroups(1, authHeader).enqueue(new Callback<GroupDataResponse>() {
             @Override
             public void onResponse(Call<GroupDataResponse> call, Response<GroupDataResponse> response) {
