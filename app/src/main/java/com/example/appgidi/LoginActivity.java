@@ -17,6 +17,9 @@ import com.example.appgidi.models.LoginResponse;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import retrofit2.Call;
@@ -43,8 +46,27 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser() {
-        String email = edtEmail.getText().toString();
-        String password = edtPassword.getText().toString();
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
+
+
+        if (email.isEmpty()) {
+            edtEmail.setError("El correo es obligatorio");
+            edtEmail.requestFocus();
+            return;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            edtEmail.setError("Correo inválido");
+            edtEmail.requestFocus();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            edtPassword.setError("La contraseña es obligatoria");
+            edtPassword.requestFocus();
+            return;
+        }
 
         User user = new User(email, password, "mobile");
 
@@ -71,15 +93,30 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(LoginActivity.this, loginResponse.getMsg(), Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Toast.makeText(LoginActivity.this, "Error: " + errorBody, Toast.LENGTH_LONG).show();
-                        Log.e("API_ERROR", errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Toast.makeText(LoginActivity.this, "Error al procesar respuesta", Toast.LENGTH_SHORT).show();
+                } else { // Este 'else' es para respuestas NO exitosas (códigos 4xx, 5xx, etc.)
+                    String errorMessage = "Error desconocido"; // Mensaje por defecto
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorBodyString = response.errorBody().string();
+                            Log.e("API_ERROR_RAW", errorBodyString); // Loguea el JSON crudo para depuración
+
+                            // Parsear el JSON para obtener el mensaje específico
+                            JSONObject errorObj = new JSONObject(errorBodyString);
+                            if (errorObj.has("msg")) {
+                                errorMessage = errorObj.getString("msg");
+                            } else {
+                                // Si no hay "msg", podrías intentar obtener otro campo o usar el mensaje por defecto
+                                errorMessage = "Error en la respuesta del servidor";
+                            }
+                        } catch (IOException e) {
+                            Log.e("API_ERROR_IO", "Error al leer errorBody", e);
+                            errorMessage = "Error al procesar respuesta del servidor";
+                        } catch (JSONException e) {
+                            Log.e("API_ERROR_JSON", "Error al parsear JSON de error", e);
+                            errorMessage = "Formato de error inesperado del servidor";
+                        }
                     }
+                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
 
