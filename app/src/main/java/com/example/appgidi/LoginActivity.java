@@ -1,7 +1,6 @@
 package com.example.appgidi;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -10,10 +9,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.appgidi.HorarioActivity;
-import com.example.appgidi.R;
-import com.example.appgidi.models.User;
 import com.example.appgidi.models.LoginResponse;
+import com.example.appgidi.models.User;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
 
@@ -29,6 +26,7 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     EditText edtEmail, edtPassword;
+    Button loginButton;
     ApiService apiService;
 
     @Override
@@ -38,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
 
         edtEmail = findViewById(R.id.email);
         edtPassword = findViewById(R.id.password);
-        Button loginButton = findViewById(R.id.loginButton);
+        loginButton = findViewById(R.id.loginButton);
 
         apiService = ApiClient.getClient().create(ApiService.class);
 
@@ -48,7 +46,6 @@ public class LoginActivity extends AppCompatActivity {
     private void loginUser() {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
-
 
         if (email.isEmpty()) {
             edtEmail.setError("El correo es obligatorio");
@@ -73,57 +70,37 @@ public class LoginActivity extends AppCompatActivity {
         apiService.loginUser(user).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    LoginResponse loginResponse = response.body();
+                if (response.isSuccessful() && response.body() != null && "success".equals(response.body().getStatus())) {
+                    // Éxito: se envió el código, pero aún NO hay token
+                    String email = response.body().getData().getEmail();
 
-                    if ("success".equals(loginResponse.getStatus())) {
-                        // Guardar token JWT
-                        String jwtToken = loginResponse.getData().getToken();
-                        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-                        prefs.edit()
-                                .putString("jwt_token", jwtToken)
-                                .putInt("user_id", loginResponse.getData().getId())
-                                .putString("user_email", loginResponse.getData().getEmail())
-                                .apply();
+                    Toast.makeText(LoginActivity.this, "Código enviado al correo", Toast.LENGTH_SHORT).show();
 
-                        // Ir a siguiente pantalla
-                        Toast.makeText(LoginActivity.this, loginResponse.getMsg(), Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, HorarioActivity.class));
-                        finish();
-                    } else {
-                        Toast.makeText(LoginActivity.this, loginResponse.getMsg(), Toast.LENGTH_SHORT).show();
-                    }
-                } else { // Este 'else' es para respuestas NO exitosas (códigos 4xx, 5xx, etc.)
-                    String errorMessage = "Error desconocido"; // Mensaje por defecto
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBodyString = response.errorBody().string();
-                            Log.e("API_ERROR_RAW", errorBodyString); // Loguea el JSON crudo para depuración
-
-                            // Parsear el JSON para obtener el mensaje específico
-                            JSONObject errorObj = new JSONObject(errorBodyString);
-                            if (errorObj.has("msg")) {
-                                errorMessage = errorObj.getString("msg");
-                            } else {
-                                // Si no hay "msg", podrías intentar obtener otro campo o usar el mensaje por defecto
-                                errorMessage = "Error en la respuesta del servidor";
-                            }
-                        } catch (IOException e) {
-                            Log.e("API_ERROR_IO", "Error al leer errorBody", e);
-                            errorMessage = "Error al procesar respuesta del servidor";
-                        } catch (JSONException e) {
-                            Log.e("API_ERROR_JSON", "Error al parsear JSON de error", e);
-                            errorMessage = "Formato de error inesperado del servidor";
-                        }
-                    }
-                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(LoginActivity.this, VerifyCodeActivity.class);
+                    intent.putExtra("email", email);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // Este else no debe asumir que fue por correo o contraseña erróneos
+                    showError(response);
                 }
+
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Log.e("NETWORK_ERROR", "Error de conexión", t);
                 Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+
+            private void showError(Response<LoginResponse> response) {
+                try {
+                    String errorBody = response.errorBody().string();
+                    JSONObject errorObj = new JSONObject(errorBody);
+                    String msg = errorObj.optString("msg", "Error al iniciar sesión");
+                    Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_SHORT).show();
+                } catch (IOException | JSONException e) {
+                    Toast.makeText(LoginActivity.this, "Error desconocido", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

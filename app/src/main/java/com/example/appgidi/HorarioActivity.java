@@ -51,6 +51,13 @@ public class HorarioActivity extends AppCompatActivity {
         setContentView(R.layout.activity_horario);
         ImageView iconAjustes = findViewById(R.id.iconAjustes);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshHorario);
+        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
+        String token = prefs.getString("jwt_token", null);
+        if (token == null) {
+            // Redirigir a login si no está autenticado
+            startActivity(new Intent(HorarioActivity.this, LoginActivity.class));
+            finish();
+        }
         iconAjustes.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(HorarioActivity.this, view);
             popup.getMenuInflater().inflate(R.menu.menu_ajustes, popup.getMenu());

@@ -6,6 +6,7 @@ import com.example.appgidi.models.GradesResponse;
 import com.example.appgidi.models.GroupDataResponse;
 import com.example.appgidi.models.LoginResponse;
 import com.example.appgidi.models.User;
+import com.example.appgidi.models.VerifyCodeRequest;
 
 import java.util.List;
 
@@ -57,6 +58,7 @@ public interface ApiService {
             @Header("Authorization") String token
     );
 
-
+    @POST("/api/users/verify")
+    Call<LoginResponse> verifyCode(@Body VerifyCodeRequest request);
 
 }
