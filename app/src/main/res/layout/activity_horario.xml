@@ -5,7 +5,9 @@
     android:id="@+id/layoutHorario"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA">
+    android:background="#FAFAFA"
+    android:fitsSystemWindows="true"
+    >
 
   <!-- Encabezado -->
   <LinearLayout
@@ -163,10 +165,8 @@
       app:labelVisibilityMode="labeled"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.0"
       app:layout_constraintStart_toStartOf="parent"
       app:menu="@menu/bottom_nav_menu"
-      android:layout_gravity="bottom"
       app:itemIconTint="@color/nav_item_color"
       app:itemTextColor="@color/nav_item_color"
       />

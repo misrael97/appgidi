@@ -4,7 +4,9 @@ import com.example.appgidi.models.Attendance;
 import com.example.appgidi.models.AttendanceResponse;
 import com.example.appgidi.models.GradesResponse;
 import com.example.appgidi.models.GroupDataResponse;
+import com.example.appgidi.models.LoginInitResponse;
 import com.example.appgidi.models.LoginResponse;
+import com.example.appgidi.models.ResendCodeRequest;
 import com.example.appgidi.models.User;
 import com.example.appgidi.models.VerifyCodeRequest;
 
@@ -20,7 +22,7 @@ import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("/api/login")
-    Call<LoginResponse> loginUser(@Body User user);
+    Call<LoginInitResponse> loginUser(@Body User user);
 
     @GET("api/teacher-subject-groups/group/{groupId}")
     Call<GroupDataResponse> getTeacherGroups(
@@ -60,5 +62,8 @@ public interface ApiService {
 
     @POST("/api/users/verify")
     Call<LoginResponse> verifyCode(@Body VerifyCodeRequest request);
+
+    @POST("/api/resend")
+    Call<Void> resendCode(@Body ResendCodeRequest request);
 
 }

@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.appgidi.models.LoginResponse;
+import com.example.appgidi.models.LoginInitResponse;
 import com.example.appgidi.models.User;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
@@ -25,9 +25,9 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    EditText edtEmail, edtPassword;
-    Button loginButton;
-    ApiService apiService;
+    private EditText edtEmail, edtPassword;
+    private Button loginButton;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,32 +67,36 @@ public class LoginActivity extends AppCompatActivity {
 
         User user = new User(email, password, "mobile");
 
-        apiService.loginUser(user).enqueue(new Callback<LoginResponse>() {
+        apiService.loginUser(user).enqueue(new Callback<LoginInitResponse>() {
             @Override
-            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+            public void onResponse(Call<LoginInitResponse> call, Response<LoginInitResponse> response) {
                 if (response.isSuccessful() && response.body() != null && "success".equals(response.body().getStatus())) {
-                    // Éxito: se envió el código, pero aún NO hay token
-                    String email = response.body().getData().getEmail();
+                    LoginInitResponse.LoginInitData data = response.body().getData();
+                    String email = data.getEmail();
+                    int userId = data.getId();
 
-                    Toast.makeText(LoginActivity.this, "Código enviado al correo", Toast.LENGTH_SHORT).show();
+                    Log.d("LoginActivity", "ID del usuario: " + userId + " Email: " + email);
 
+                    Toast.makeText(LoginActivity.this, "Código 2FA enviado al correo", Toast.LENGTH_SHORT).show();
+
+                    // Redirigir a VerifyCodeActivity con email e ID
                     Intent intent = new Intent(LoginActivity.this, VerifyCodeActivity.class);
                     intent.putExtra("email", email);
+                    intent.putExtra("user_id", userId);
                     startActivity(intent);
                     finish();
                 } else {
-                    // Este else no debe asumir que fue por correo o contraseña erróneos
                     showError(response);
                 }
-
             }
 
             @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
+            public void onFailure(Call<LoginInitResponse> call, Throwable t) {
                 Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e("LoginActivity", "Fallo en la petición", t);
             }
 
-            private void showError(Response<LoginResponse> response) {
+            private void showError(Response<LoginInitResponse> response) {
                 try {
                     String errorBody = response.errorBody().string();
                     JSONObject errorObj = new JSONObject(errorBody);

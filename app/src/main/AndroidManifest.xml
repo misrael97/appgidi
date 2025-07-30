@@ -34,6 +34,9 @@
             android:name=".LoginActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity android:name=".VerifyCodeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <!-- Horarios -->
         <activity
