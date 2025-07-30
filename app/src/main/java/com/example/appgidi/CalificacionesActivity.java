@@ -10,7 +10,11 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -48,6 +52,7 @@ public class CalificacionesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_calificaciones);
         ImageView iconAjustes = findViewById(R.id.iconAjustesCal);
         spinnerMateria = findViewById(R.id.spinnerMateria);
@@ -77,6 +82,12 @@ public class CalificacionesActivity extends AppCompatActivity {
             });
 
             popup.show();
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutCalificaciones), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
         });
 
     }

@@ -12,7 +12,11 @@ import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -55,6 +59,7 @@ public class AsistenciaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_asistencia);
         ImageView iconAjustes = findViewById(R.id.iconAjustesAsis);
         spinnerMes = findViewById(R.id.spinnerMes);
@@ -89,6 +94,11 @@ public class AsistenciaActivity extends AppCompatActivity {
             swipeRefreshLayout.setRefreshing(false);
         });
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutAsistencia), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
     }
 

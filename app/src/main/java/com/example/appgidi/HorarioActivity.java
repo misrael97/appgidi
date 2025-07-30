@@ -77,7 +77,7 @@ public class HorarioActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             obtenerDatosDesdeAPI();
             swipeRefreshLayout.setRefreshing(false);
-        });
+                });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutHorario), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
