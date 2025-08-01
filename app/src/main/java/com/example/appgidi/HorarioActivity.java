@@ -106,22 +106,40 @@ public class HorarioActivity extends AppCompatActivity {
     }
     private void obtenerDatosDesdeAPI() {
         SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
         String token = prefs.getString("jwt_token", null);
+
         if (token == null) {
             Toast.makeText(this, "Token no encontrado, por favor inicia sesión", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        Log.d("API_DEBUG", "Llamando a: student_id=" + userId + " con token=" + token);
         String authHeader = "Bearer " + token;
 
         ApiService api = ApiClient.getClient().create(ApiService.class);
-        api.getTeacherGroups(1, authHeader).enqueue(new Callback<GroupDataResponse>() {
+        api.getTeacherGroups(userId, authHeader).enqueue(new Callback<GroupDataResponse>() {
             @Override
             public void onResponse(Call<GroupDataResponse> call, Response<GroupDataResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    listaCompleta = response.body().getTeacherSubjectGroups();
+                    GroupDataResponse body = response.body();
 
-                    Log.d("API_DEBUG", "Cantidad de asignaciones recibidas: " + listaCompleta.size());
+                    List<TeacherSubjectGroup> schedule = body.getSchedule();
+                    List<TeacherSubjectGroup> teacherGroups = body.getTeacherSubjectGroups();
 
+                    if (!schedule.isEmpty()) {
+                        listaCompleta = schedule;
+                        Log.d("API_DEBUG", "Horario del estudiante recibido. Total clases: " + schedule.size());
+                    } else if (!teacherGroups.isEmpty()) {
+                        listaCompleta = teacherGroups;
+                        Log.d("API_DEBUG", "Asignaciones del maestro recibidas. Total grupos: " + teacherGroups.size());
+                    } else {
+                        Log.d("API_DEBUG", "Respuesta válida pero sin datos.");
+                        Toast.makeText(HorarioActivity.this, "No hay asignaciones disponibles", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Log por cada clase
                     for (TeacherSubjectGroup item : listaCompleta) {
                         String materia = item.getSubjects() != null ? item.getSubjects().getName() : "null";
                         String profe = item.getUsers() != null ? item.getUsers().getFullName() : "null";
@@ -131,6 +149,7 @@ public class HorarioActivity extends AppCompatActivity {
                     }
 
                     filtrarPorDia(diaActual);
+
                 } else {
                     Log.e("API_DEBUG", "Error en la respuesta: " + response.code());
                     Toast.makeText(HorarioActivity.this, "Error al obtener datos", Toast.LENGTH_SHORT).show();
@@ -144,6 +163,7 @@ public class HorarioActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void filtrarPorDia(String dia) {
         List<TeacherSubjectGroup> filtrados = new ArrayList<>();

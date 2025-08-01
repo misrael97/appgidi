@@ -73,7 +73,12 @@ public class VerifyCodeActivity extends AppCompatActivity {
                     String token = response.body().getData().getToken();
 
                     SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-                    prefs.edit().putString("jwt_token", token).apply();
+                    prefs.edit()
+                            .putString("jwt_token", token)
+                            .putInt("user_id", userId)
+                            .apply();
+
+                    Log.d("LOGIN_DEBUG", "Guardado user_id=" + userId + " token=" + token);
 
                     Toast.makeText(VerifyCodeActivity.this, "Verificación exitosa", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(VerifyCodeActivity.this, HorarioActivity.class));
@@ -90,6 +95,7 @@ public class VerifyCodeActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void reenviarCodigo() {
         ResendCodeRequest request = new ResendCodeRequest(email);

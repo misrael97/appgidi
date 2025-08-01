@@ -21,31 +21,31 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface ApiService {
-    @POST("/api/login")
+    @POST("/api/academic/login")
     Call<LoginInitResponse> loginUser(@Body User user);
 
-    @GET("api/teacher-subject-groups/group/{groupId}")
+    @GET("api/academic/teacher-subject-groups/student/{student_id}")
     Call<GroupDataResponse> getTeacherGroups(
-            @Path("groupId") int groupId,
+            @Path("student_id") int studentId,
             @Header("Authorization") String authHeader
     );
 
-    @GET("api/grades/student/{studentId}")
+    @GET("api/academic/grades/student/{studentId}")
     Call<GradesResponse> getAllStudentGrades(
             @Path("studentId") int studentId,
             @Header("Authorization") String token
     );
 
-    @GET("api/grades/student/{studentId}/{subjectId}")
+    @GET("api/academic/grades/student/{studentId}/{subjectId}")
     Call<GradesResponse> getStudentGradesBySubject(
             @Path("studentId") int studentId,
             @Path("subjectId") int subjectId,
             @Header("Authorization") String token
     );
-    @GET("api/teacher-subject-groups/student/{userId}")
+    @GET("api/academic/teacher-subject-groups/student/{userId}")
     Call<GroupDataResponse> getSubjectsForStudent(@Path("userId") int userId, @Header("Authorization") String token);
 
-    @GET("api/attendance")
+    @GET("api/academic/attendance")
     Call<AttendanceResponse> getAttendanceFiltered(
             @Query("user_id") int userId,
             @Query("month") int month,
@@ -54,16 +54,16 @@ public interface ApiService {
             @Header("Authorization") String authHeader
     );
 
-    @GET("api/grades/student/{student_id}")
+    @GET("api/academic/grades/student/{student_id}")
     Call<GradesResponse> getGradesForStudent(
             @Path("student_id") int studentId,
             @Header("Authorization") String token
     );
 
-    @POST("/api/users/verify")
+    @POST("/api/academic/users/verify")
     Call<LoginResponse> verifyCode(@Body VerifyCodeRequest request);
 
-    @POST("/api/resend")
+    @POST("/api/academic/resend")
     Call<Void> resendCode(@Body ResendCodeRequest request);
 
 }
