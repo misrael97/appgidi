@@ -1,7 +1,6 @@
 package com.example.appgidi;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -15,6 +14,7 @@ import com.example.appgidi.models.ResendCodeRequest;
 import com.example.appgidi.models.VerifyCodeRequest;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.SessionManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +30,7 @@ public class VerifyCodeActivity extends AppCompatActivity {
     private EditText editCode;
     private Button btnVerify, btnResend;
     private ApiService apiService;
+    private SessionManager sessionManager;
     private String email;
     private int userId;
 
@@ -43,6 +44,7 @@ public class VerifyCodeActivity extends AppCompatActivity {
         btnResend = findViewById(R.id.btnResend);
 
         apiService = ApiClient.getClient().create(ApiService.class);
+        sessionManager = new SessionManager(this);
 
         // Obtener email y userId desde el intent
         email = getIntent().getStringExtra("email");
@@ -72,11 +74,8 @@ public class VerifyCodeActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getData().getToken();
 
-                    SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-                    prefs.edit()
-                            .putString("jwt_token", token)
-                            .putInt("user_id", userId)
-                            .apply();
+                    // Guardar sesión usando SessionManager
+                    sessionManager.saveSession(token, userId);
 
                     Log.d("LOGIN_DEBUG", "Guardado user_id=" + userId + " token=" + token);
 

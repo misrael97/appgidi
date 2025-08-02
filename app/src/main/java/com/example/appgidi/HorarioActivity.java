@@ -1,7 +1,6 @@
 package com.example.appgidi;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +23,7 @@ import com.example.appgidi.models.GroupDataResponse;
 import com.example.appgidi.models.TeacherSubjectGroup;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -42,22 +42,28 @@ public class HorarioActivity extends AppCompatActivity {
     private List<TeacherSubjectGroup> listaCompleta = new ArrayList<>();
     private String diaActual = "Monday"; // Día por defecto
     private SwipeRefreshLayout swipeRefreshLayout;
-
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_horario);
+        
+        // Inicializar SessionManager
+        sessionManager = new SessionManager(this);
+        
         ImageView iconAjustes = findViewById(R.id.iconAjustes);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshHorario);
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        String token = prefs.getString("jwt_token", null);
-        if (token == null) {
+        
+        // Verificar si el usuario está logueado
+        if (!sessionManager.isLoggedIn()) {
             // Redirigir a login si no está autenticado
             startActivity(new Intent(HorarioActivity.this, LoginActivity.class));
             finish();
+            return;
         }
+        
         iconAjustes.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(HorarioActivity.this, view);
             popup.getMenuInflater().inflate(R.menu.menu_ajustes, popup.getMenu());
@@ -77,7 +83,7 @@ public class HorarioActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             obtenerDatosDesdeAPI();
             swipeRefreshLayout.setRefreshing(false);
-                });
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.layoutHorario), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -96,8 +102,8 @@ public class HorarioActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        prefs.edit().clear().apply();
+        // Usar SessionManager para cerrar sesión
+        sessionManager.logout();
 
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -105,9 +111,8 @@ public class HorarioActivity extends AppCompatActivity {
         finish();
     }
     private void obtenerDatosDesdeAPI() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
-        String token = prefs.getString("jwt_token", null);
+        int userId = sessionManager.getUserId();
+        String token = sessionManager.getToken();
 
         if (token == null) {
             Toast.makeText(this, "Token no encontrado, por favor inicia sesión", Toast.LENGTH_SHORT).show();

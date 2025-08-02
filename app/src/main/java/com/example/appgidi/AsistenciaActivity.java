@@ -31,6 +31,7 @@ import com.example.appgidi.models.Subject;
 import com.example.appgidi.models.TeacherSubjectGroup;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 
@@ -54,13 +55,17 @@ public class AsistenciaActivity extends AppCompatActivity {
     private List<Subject> materias = new ArrayList<>();
     private int selectedMes = 0, selectedSubjectId = -1;
     private SwipeRefreshLayout swipeRefreshLayout;
-
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_asistencia);
+        
+        // Inicializar SessionManager
+        sessionManager = new SessionManager(this);
+        
         ImageView iconAjustes = findViewById(R.id.iconAjustesAsis);
         spinnerMes = findViewById(R.id.spinnerMes);
         spinnerMateria = findViewById(R.id.spinnerMateria);
@@ -99,12 +104,11 @@ public class AsistenciaActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
     }
 
     private void cerrarSesion() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        prefs.edit().clear().apply();
+        // Usar SessionManager para cerrar sesión
+        sessionManager.logout();
 
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -133,9 +137,8 @@ public class AsistenciaActivity extends AppCompatActivity {
     }
 
     private void cargarMaterias() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
-        String token = prefs.getString("jwt_token", null);
+        int userId = sessionManager.getUserId();
+        String token = sessionManager.getToken();
         String authHeader = "Bearer " + token;
 
         ApiService api = ApiClient.getClient().create(ApiService.class);
@@ -196,9 +199,8 @@ public class AsistenciaActivity extends AppCompatActivity {
 
 
     private void obtenerAsistencias() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
-        String token = prefs.getString("jwt_token", null);
+        int userId = sessionManager.getUserId();
+        String token = sessionManager.getToken();
         String authHeader = "Bearer " + token;
         int year = Calendar.getInstance().get(Calendar.YEAR);
 

@@ -1,7 +1,6 @@
 package com.example.appgidi;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,6 +24,7 @@ import com.example.appgidi.models.GradesResponse;
 import com.example.appgidi.models.Subject;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,13 +47,17 @@ public class CalificacionesActivity extends AppCompatActivity {
     private List<Subject> materias = new ArrayList<>();
     private ArrayAdapter<Subject> spinnerAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
-
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_calificaciones);
+        
+        // Inicializar SessionManager
+        sessionManager = new SessionManager(this);
+        
         ImageView iconAjustes = findViewById(R.id.iconAjustesCal);
         spinnerMateria = findViewById(R.id.spinnerMateria);
         recyclerView = findViewById(R.id.recyclerCalificaciones);
@@ -93,8 +97,8 @@ public class CalificacionesActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        prefs.edit().clear().apply();
+        // Usar SessionManager para cerrar sesión
+        sessionManager.logout();
 
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -104,9 +108,8 @@ public class CalificacionesActivity extends AppCompatActivity {
 
 
     private void obtenerCalificacionesDesdeAPI() {
-        SharedPreferences prefs = getSharedPreferences("AppGidiPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
-        String token = prefs.getString("jwt_token", null);
+        int userId = sessionManager.getUserId();
+        String token = sessionManager.getToken();
         if (token == null || userId == -1) return;
 
 
