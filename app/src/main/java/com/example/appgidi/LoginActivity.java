@@ -2,9 +2,12 @@ package com.example.appgidi;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +30,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText edtEmail, edtPassword;
     private Button loginButton;
+    private ImageView passwordToggle;
     private ApiService apiService;
+    private boolean isPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +42,14 @@ public class LoginActivity extends AppCompatActivity {
         edtEmail = findViewById(R.id.email);
         edtPassword = findViewById(R.id.password);
         loginButton = findViewById(R.id.loginButton);
+        passwordToggle = findViewById(R.id.passwordToggle);
 
         apiService = ApiClient.getClient().create(ApiService.class);
 
         loginButton.setOnClickListener(v -> loginUser());
+        
+        // Configurar el toggle de contraseña
+        setupPasswordToggle();
     }
 
     private void loginUser() {
@@ -105,6 +114,31 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (IOException | JSONException e) {
                     Toast.makeText(LoginActivity.this, "Error desconocido", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+    }
+    
+    /**
+     * Configura la funcionalidad de mostrar/ocultar contraseña
+     */
+    private void setupPasswordToggle() {
+        passwordToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPasswordVisible) {
+                    // Ocultar contraseña
+                    edtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    passwordToggle.setImageResource(R.drawable.ic_eye_closed);
+                    isPasswordVisible = false;
+                } else {
+                    // Mostrar contraseña
+                    edtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    passwordToggle.setImageResource(R.drawable.ic_eye_open);
+                    isPasswordVisible = true;
+                }
+                
+                // Mover el cursor al final del texto
+                edtPassword.setSelection(edtPassword.getText().length());
             }
         });
     }

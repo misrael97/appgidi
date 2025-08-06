@@ -1,5 +1,6 @@
 package com.example.appgidi.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,14 +43,24 @@ public class GradeAdapter extends RecyclerView.Adapter<GradeAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Grade grade = gradeList.get(position);
+        
+        Log.d("GradeAdapter", "=== MOSTRANDO CALIFICACIÓN ===");
+        Log.d("GradeAdapter", "Posición: " + position);
+        Log.d("GradeAdapter", "Materia: " + (grade.getSubject() != null ? grade.getSubject().getName() : "NULL"));
+        Log.d("GradeAdapter", "Unidad: " + grade.getUnitNumber());
+        Log.d("GradeAdapter", "Calificación: " + grade.getGrade());
 
-        // Mostrar nombre del profesor desde Map
+        // Mostrar nombre del profesor desde Map con manejo de nulos
         if (grade.getTeacher() != null) {
             Map<String, Object> teacher = grade.getTeacher();
-            String nombre = teacher.get("first_name") + " " + teacher.get("last_name");
-            holder.tvProfesor.setText(nombre);
+            String firstName = teacher.get("first_name") != null ? teacher.get("first_name").toString() : "";
+            String lastName = teacher.get("last_name") != null ? teacher.get("last_name").toString() : "";
+            String nombre = (firstName + " " + lastName).trim();
+            holder.tvProfesor.setText(nombre.isEmpty() ? "Sin profesor" : nombre);
+            Log.d("GradeAdapter", "Profesor: " + nombre);
         } else {
             holder.tvProfesor.setText("Sin profesor");
+            Log.d("GradeAdapter", "Profesor: NULL");
         }
 
         // Unidad
@@ -57,15 +68,27 @@ public class GradeAdapter extends RecyclerView.Adapter<GradeAdapter.ViewHolder> 
 
         // Calificación
         holder.tvCalificacion.setText(String.valueOf(grade.getGrade()));
+        
+        Log.d("GradeAdapter", "=== FIN MOSTRANDO CALIFICACIÓN ===");
     }
 
     @Override
     public int getItemCount() {
-        return gradeList.size();
+        return gradeList != null ? gradeList.size() : 0;
     }
 
     public void actualizarLista(List<Grade> nuevas) {
+        Log.d("GradeAdapter", "=== ACTUALIZANDO LISTA ===");
+        Log.d("GradeAdapter", "Nuevas calificaciones: " + nuevas.size());
+        for (int i = 0; i < nuevas.size(); i++) {
+            Grade g = nuevas.get(i);
+            Log.d("GradeAdapter", "Calificación " + (i+1) + ": " + 
+                  (g.getSubject() != null ? g.getSubject().getName() : "NULL") + 
+                  " - Unidad " + g.getUnitNumber() + " - Calificación " + g.getGrade());
+        }
+        
         this.gradeList = nuevas;
         notifyDataSetChanged();
+        Log.d("GradeAdapter", "=== LISTA ACTUALIZADA ===");
     }
 }

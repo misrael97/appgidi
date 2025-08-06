@@ -24,27 +24,29 @@ public interface ApiService {
     @POST("/api/academic/login")
     Call<LoginInitResponse> loginUser(@Body User user);
 
+    // Horarios - Obtener materias del estudiante
     @GET("api/academic/teacher-subject-groups/student/{student_id}")
     Call<GroupDataResponse> getTeacherGroups(
             @Path("student_id") int studentId,
             @Header("Authorization") String authHeader
     );
 
-    @GET("api/academic/grades/student/{studentId}")
+    // Calificaciones - Obtener todas las calificaciones del estudiante
+    @GET("api/academic/grades/student/{student_id}")
     Call<GradesResponse> getAllStudentGrades(
-            @Path("studentId") int studentId,
+            @Path("student_id") int studentId,
             @Header("Authorization") String token
     );
 
-    @GET("api/academic/grades/student/{studentId}/{subjectId}")
+    // Calificaciones - Obtener calificaciones por materia
+    @GET("api/academic/grades/student/{student_id}/{subject_id}")
     Call<GradesResponse> getStudentGradesBySubject(
-            @Path("studentId") int studentId,
-            @Path("subjectId") int subjectId,
+            @Path("student_id") int studentId,
+            @Path("subject_id") int subjectId,
             @Header("Authorization") String token
     );
-    @GET("api/academic/teacher-subject-groups/student/{userId}")
-    Call<GroupDataResponse> getSubjectsForStudent(@Path("userId") int userId, @Header("Authorization") String token);
 
+    // Asistencia - Obtener asistencia filtrada
     @GET("api/academic/attendance")
     Call<AttendanceResponse> getAttendanceFiltered(
             @Query("user_id") int userId,
@@ -52,12 +54,6 @@ public interface ApiService {
             @Query("year") int year,
             @Query("subject_id") int subjectId,
             @Header("Authorization") String authHeader
-    );
-
-    @GET("api/academic/grades/student/{student_id}")
-    Call<GradesResponse> getGradesForStudent(
-            @Path("student_id") int studentId,
-            @Header("Authorization") String token
     );
 
     @POST("/api/academic/users/verify")

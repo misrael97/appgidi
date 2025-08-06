@@ -31,6 +31,7 @@ import com.example.appgidi.models.Subject;
 import com.example.appgidi.models.TeacherSubjectGroup;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.NetworkUtils;
 import com.example.appgidi.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
@@ -63,6 +64,8 @@ public class AsistenciaActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_asistencia);
         
+        Log.d("AsistenciaActivity", "=== ACTIVIDAD INICIADA ===");
+        
         // Inicializar SessionManager
         sessionManager = new SessionManager(this);
         
@@ -75,6 +78,7 @@ public class AsistenciaActivity extends AppCompatActivity {
         adapter = new AttendanceAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
+        Log.d("AsistenciaActivity", "Iniciando carga de meses y materias");
         cargarMeses();
         cargarMaterias();
         setupBottomNav(R.id.nav_asistencias);
@@ -137,20 +141,49 @@ public class AsistenciaActivity extends AppCompatActivity {
     }
 
     private void cargarMaterias() {
+        // Verificar conectividad de red
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "Error: Sin conexión a internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         int userId = sessionManager.getUserId();
         String token = sessionManager.getToken();
         String authHeader = "Bearer " + token;
 
-        ApiService api = ApiClient.getClient().create(ApiService.class);
+        if (token == null || userId == -1) {
+            Toast.makeText(this, "Error: No hay sesión activa", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        api.getGradesForStudent(userId, authHeader).enqueue(new Callback<GradesResponse>() {
+        Log.d("AsistenciaActivity", "=== INICIANDO CARGA DE MATERIAS ===");
+        Log.d("AsistenciaActivity", "UserID: " + userId);
+        Log.d("AsistenciaActivity", "Token: " + (token != null ? "Presente" : "Ausente"));
+
+        // Obtener materias desde las calificaciones del estudiante
+        ApiService api = ApiClient.getClient().create(ApiService.class);
+        api.getAllStudentGrades(userId, authHeader).enqueue(new Callback<GradesResponse>() {
             @Override
             public void onResponse(Call<GradesResponse> call, Response<GradesResponse> response) {
+                Log.d("AsistenciaActivity", "=== RESPUESTA API ASISTENCIA ===");
+                Log.d("AsistenciaActivity", "Código: " + response.code());
+                Log.d("AsistenciaActivity", "¿Exitoso?: " + response.isSuccessful());
+                
                 if (response.isSuccessful() && response.body() != null) {
+                    List<Grade> grades = response.body().getData().getGrades();
+                    Log.d("AsistenciaActivity", "Total de calificaciones recibidas: " + grades.size());
+                    
+                    for (int i = 0; i < grades.size(); i++) {
+                        Grade g = grades.get(i);
+                        Log.d("AsistenciaActivity", "Calificación " + (i+1) + ": " + 
+                              (g.getSubject() != null ? g.getSubject().getName() : "NULL") + 
+                              " (ID: " + (g.getSubject() != null ? g.getSubject().getId() : "NULL") + ")");
+                    }
+                    
                     List<Subject> materiasUnicas = new ArrayList<>();
                     Set<String> nombres = new HashSet<>();
 
-                    for (Grade g : response.body().getData().getGrades()) {
+                    for (Grade g : grades) {
                         Subject s = g.getSubject();
                         if (!nombres.contains(s.getName())) {
                             materiasUnicas.add(s);
@@ -161,6 +194,12 @@ public class AsistenciaActivity extends AppCompatActivity {
                     materias.clear();
                     materias.addAll(materiasUnicas);
 
+                    Log.d("AsistenciaActivity", "=== MATERIAS ÚNICAS ENCONTRADAS ===");
+                    Log.d("AsistenciaActivity", "Total de materias únicas: " + materias.size());
+                    for (Subject materia : materias) {
+                        Log.d("AsistenciaActivity", "Materia: " + materia.getName() + " (ID: " + materia.getId() + ")");
+                    }
+
                     List<String> opciones = new ArrayList<>();
                     opciones.add("Materia");
                     for (Subject s : materias) opciones.add(s.getName());
@@ -169,15 +208,28 @@ public class AsistenciaActivity extends AppCompatActivity {
                     spinnerMateria.setAdapter(adapterMateria);
                     spinnerMateria.setSelection(0);
 
+                    // Log para debugging
+                    Log.d("AsistenciaActivity", "Materias cargadas: " + materias.size());
+                    for (Subject materia : materias) {
+                        Log.d("AsistenciaActivity", "Materia: " + materia.getName() + " (ID: " + materia.getId() + ")");
+                    }
+
                     spinnerMateria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            Log.d("AsistenciaActivity", "=== SPINNER MATERIA SELECCIONADO ===");
+                            Log.d("AsistenciaActivity", "Posición: " + position);
+                            
                             if (position == 0) {
+                                Log.d("AsistenciaActivity", "Seleccionado placeholder - Limpiando lista");
                                 adapter.actualizarLista(new ArrayList<>());
                                 return;
                             }
                             selectedSubjectId = materias.get(position - 1).getId();
+                            Log.d("AsistenciaActivity", "Materia seleccionada: " + materias.get(position - 1).getName() + " (ID: " + selectedSubjectId + ")");
+                            
                             if (selectedMes > 0) {
+                                Log.d("AsistenciaActivity", "Mes y materia seleccionados - Obteniendo asistencias");
                                 obtenerAsistencias();
                             }
                         }
@@ -186,12 +238,14 @@ public class AsistenciaActivity extends AppCompatActivity {
                         public void onNothingSelected(AdapterView<?> parent) {}
                     });
                 } else {
+                    Log.e("AsistenciaActivity", "Error en respuesta: " + response.code());
                     Toast.makeText(AsistenciaActivity.this, "No se pudieron cargar materias", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<GradesResponse> call, Throwable t) {
+                Log.e("AsistenciaActivity", "Error de red: " + t.getMessage());
                 Toast.makeText(AsistenciaActivity.this, "Error al obtener materias", Toast.LENGTH_SHORT).show();
             }
         });
@@ -199,19 +253,53 @@ public class AsistenciaActivity extends AppCompatActivity {
 
 
     private void obtenerAsistencias() {
+        // Verificar conectividad de red
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "Error: Sin conexión a internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         int userId = sessionManager.getUserId();
         String token = sessionManager.getToken();
         String authHeader = "Bearer " + token;
         int year = Calendar.getInstance().get(Calendar.YEAR);
 
+        if (token == null || userId == -1) {
+            Toast.makeText(this, "Error: No hay sesión activa", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("AsistenciaActivity", "=== OBTENIENDO ASISTENCIAS ===");
+        Log.d("AsistenciaActivity", "UserID: " + userId);
+        Log.d("AsistenciaActivity", "Mes: " + selectedMes);
+        Log.d("AsistenciaActivity", "Año: " + year);
+        Log.d("AsistenciaActivity", "SubjectID: " + selectedSubjectId);
+
         ApiService api = ApiClient.getClient().create(ApiService.class);
         api.getAttendanceFiltered(userId, selectedMes, year, selectedSubjectId, authHeader).enqueue(new Callback<AttendanceResponse>() {
             @Override
             public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
+                Log.d("AsistenciaActivity", "=== RESPUESTA ASISTENCIA ===");
+                Log.d("AsistenciaActivity", "Código: " + response.code());
+                Log.d("AsistenciaActivity", "¿Exitoso?: " + response.isSuccessful());
+                
                 if (response.isSuccessful() && response.body() != null) {
                     List<Attendance> asistencias = response.body().getData();
+                    Log.d("AsistenciaActivity", "Total de asistencias recibidas: " + asistencias.size());
+                    
+                    for (int i = 0; i < asistencias.size(); i++) {
+                        Attendance a = asistencias.get(i);
+                        Log.d("AsistenciaActivity", "Asistencia " + (i+1) + ": " + 
+                              "SubjectID: " + a.getSubject_id() + 
+                              " - Fecha: " + a.getDate() + " - Estado: " + a.getStatus());
+                    }
+                    
                     adapter.actualizarLista(asistencias);
+                    
+                    // Log para debugging
+                    Log.d("AsistenciaActivity", "Asistencias cargadas: " + asistencias.size());
                 } else {
+                    Log.e("AsistenciaActivity", "Error en respuesta: " + response.code());
                     adapter.actualizarLista(new ArrayList<>());
                     Toast.makeText(AsistenciaActivity.this, "Sin asistencias", Toast.LENGTH_SHORT).show();
                 }
@@ -219,6 +307,7 @@ public class AsistenciaActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<AttendanceResponse> call, Throwable t) {
+                Log.e("AsistenciaActivity", "Error de red: " + t.getMessage());
                 Toast.makeText(AsistenciaActivity.this, "Error al obtener asistencias: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

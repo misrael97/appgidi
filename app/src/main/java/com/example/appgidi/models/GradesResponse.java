@@ -7,16 +7,15 @@ public class GradesResponse {
     private GradesData data;
     private List<String> msg;
 
+    public String getStatus() {
+        return status;
+    }
+
     public GradesData getData() {
         return data;
     }
 
-    public static class GradeData {
-        private User student;
-        private List<Grade> grades;
-
-        public List<Grade> getGrades() {
-            return grades;
-        }
-
-}}
+    public List<String> getMsg() {
+        return msg;
+    }
+}

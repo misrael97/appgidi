@@ -2,6 +2,7 @@ package com.example.appgidi;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -24,8 +25,10 @@ import com.example.appgidi.models.GradesResponse;
 import com.example.appgidi.models.Subject;
 import com.example.appgidi.network.ApiClient;
 import com.example.appgidi.network.ApiService;
+import com.example.appgidi.utils.NetworkUtils;
 import com.example.appgidi.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +39,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import com.example.appgidi.models.GroupDataResponse;
+import com.example.appgidi.models.TeacherSubjectGroup;
 
 
 public class CalificacionesActivity extends AppCompatActivity {
@@ -55,6 +60,8 @@ public class CalificacionesActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_calificaciones);
         
+        Log.d("CalificacionesActivity", "=== ACTIVIDAD INICIADA ===");
+        
         // Inicializar SessionManager
         sessionManager = new SessionManager(this);
         
@@ -65,6 +72,8 @@ public class CalificacionesActivity extends AppCompatActivity {
         adapter = new GradeAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshCalificaciones);
+        
+        Log.d("CalificacionesActivity", "Iniciando llamada a obtenerCalificacionesDesdeAPI()");
         obtenerCalificacionesDesdeAPI();
         setupBottomNav(R.id.nav_calificaciones);
 
@@ -108,29 +117,109 @@ public class CalificacionesActivity extends AppCompatActivity {
 
 
     private void obtenerCalificacionesDesdeAPI() {
+        // Verificar conectividad de red
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "Error: Sin conexión a internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         int userId = sessionManager.getUserId();
         String token = sessionManager.getToken();
-        if (token == null || userId == -1) return;
+        
+        if (token == null || userId == -1) {
+            Toast.makeText(this, "Error: No hay sesión activa", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        Log.d("CalificacionesActivity", "Iniciando llamada a API - UserID: " + userId);
+        Log.d("CalificacionesActivity", "Token: " + (token != null ? "Presente" : "Ausente"));
 
-
+        // Obtener calificaciones del estudiante
         ApiService api = ApiClient.getClient().create(ApiService.class);
         api.getAllStudentGrades(userId, "Bearer " + token).enqueue(new Callback<GradesResponse>() {
             @Override
             public void onResponse(Call<GradesResponse> call, Response<GradesResponse> response) {
+                Log.d("CalificacionesActivity", "Respuesta recibida - Código: " + response.code());
+                
+                // Verificar respuesta completa
+                verificarRespuestaAPI(response);
+                
                 if (response.isSuccessful() && response.body() != null) {
                     todasLasCalificaciones = response.body().getData().getGrades();
                     materias = obtenerMateriasUnicas(todasLasCalificaciones);
+                    
+                    // Log detallado de los datos recibidos
+                    Log.d("CalificacionesActivity", "=== DATOS RECIBIDOS DE LA API ===");
+                    Log.d("CalificacionesActivity", "Total de calificaciones: " + todasLasCalificaciones.size());
+                    
+                    for (int i = 0; i < todasLasCalificaciones.size(); i++) {
+                        Grade grade = todasLasCalificaciones.get(i);
+                        Log.d("CalificacionesActivity", "Calificación " + (i+1) + ":");
+                        Log.d("CalificacionesActivity", "  - Materia: " + (grade.getSubject() != null ? grade.getSubject().getName() : "NULL"));
+                        Log.d("CalificacionesActivity", "  - Unidad: " + grade.getUnitNumber());
+                        Log.d("CalificacionesActivity", "  - Calificación: " + grade.getGrade());
+                        if (grade.getTeacher() != null) {
+                            Log.d("CalificacionesActivity", "  - Profesor: " + grade.getTeacher().toString());
+                        }
+                    }
+                    
+                    Log.d("CalificacionesActivity", "=== MATERIAS ENCONTRADAS ===");
+                    for (Subject materia : materias) {
+                        Log.d("CalificacionesActivity", "Materia: " + materia.getName() + " (ID: " + materia.getId() + ")");
+                    }
+                    
                     configurarSpinner(materias);
+                    
+                    // Log para debugging
+                    Log.d("CalificacionesActivity", "Calificaciones cargadas: " + todasLasCalificaciones.size());
+                    Log.d("CalificacionesActivity", "Materias encontradas: " + materias.size());
+                } else {
+                    Log.e("CalificacionesActivity", "Error en respuesta: " + response.code());
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            Log.e("CalificacionesActivity", "Error body: " + errorBody);
+                        } catch (IOException e) {
+                            Log.e("CalificacionesActivity", "Error leyendo error body", e);
+                        }
+                    }
+                    Toast.makeText(CalificacionesActivity.this, "Error al cargar calificaciones", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<GradesResponse> call, Throwable t) {
-
+                Log.e("CalificacionesActivity", "Error de red: " + t.getMessage());
                 Toast.makeText(CalificacionesActivity.this, "Error al cargar calificaciones", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+
+    private void verificarRespuestaAPI(Response<GradesResponse> response) {
+        Log.d("CalificacionesActivity", "=== VERIFICACIÓN DE RESPUESTA API ===");
+        Log.d("CalificacionesActivity", "Código de respuesta: " + response.code());
+        Log.d("CalificacionesActivity", "¿Es exitosa?: " + response.isSuccessful());
+        Log.d("CalificacionesActivity", "¿Tiene body?: " + (response.body() != null));
+        
+        if (response.body() != null) {
+            GradesResponse gradesResponse = response.body();
+            Log.d("CalificacionesActivity", "Status de respuesta: " + gradesResponse.getStatus());
+            Log.d("CalificacionesActivity", "¿Tiene data?: " + (gradesResponse.getData() != null));
+            
+            if (gradesResponse.getData() != null) {
+                Log.d("CalificacionesActivity", "Total de calificaciones en data: " + gradesResponse.getData().getGrades().size());
+            }
+        }
+        
+        // Verificar headers
+        Log.d("CalificacionesActivity", "Headers de respuesta:");
+        for (String headerName : response.headers().names()) {
+            Log.d("CalificacionesActivity", headerName + ": " + response.headers().get(headerName));
+        }
+        
+        Log.d("CalificacionesActivity", "=== FIN VERIFICACIÓN ===");
     }
 
     private List<Subject> obtenerMateriasUnicas(List<Grade> grades) {
@@ -152,26 +241,51 @@ public class CalificacionesActivity extends AppCompatActivity {
         listaConPlaceholder.add(placeholder);
         listaConPlaceholder.addAll(materias);
 
+        Log.d("CalificacionesActivity", "=== CONFIGURANDO SPINNER ===");
+        Log.d("CalificacionesActivity", "Total de materias en spinner: " + listaConPlaceholder.size());
+        for (int i = 0; i < listaConPlaceholder.size(); i++) {
+            Subject s = listaConPlaceholder.get(i);
+            Log.d("CalificacionesActivity", "Posición " + i + ": " + s.getName() + " (ID: " + s.getId() + ")");
+        }
+
         spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, listaConPlaceholder);
         spinnerMateria.setAdapter(spinnerAdapter);
 
         spinnerMateria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("CalificacionesActivity", "=== SPINNER SELECCIONADO ===");
+                Log.d("CalificacionesActivity", "Posición seleccionada: " + position);
+                
                 if (position == 0) {
+                    Log.d("CalificacionesActivity", "Seleccionado placeholder - Limpiando lista");
                     adapter.actualizarLista(new ArrayList<>());
                     return;
                 }
+                
                 Subject materiaSeleccionada = (Subject) parent.getItemAtPosition(position);
+                Log.d("CalificacionesActivity", "Materia seleccionada: " + materiaSeleccionada.getName() + " (ID: " + materiaSeleccionada.getId() + ")");
+                
                 List<Grade> filtradas = new ArrayList<>();
+                Log.d("CalificacionesActivity", "Filtrando calificaciones para materia: " + materiaSeleccionada.getName());
+                
                 for (Grade g : todasLasCalificaciones) {
-                    if (g.getSubject().getId() == materiaSeleccionada.getId()) {
+                    Log.d("CalificacionesActivity", "Comparando: " + (g.getSubject() != null ? g.getSubject().getName() : "NULL") + 
+                          " (ID: " + (g.getSubject() != null ? g.getSubject().getId() : "NULL") + ") vs " + 
+                          materiaSeleccionada.getName() + " (ID: " + materiaSeleccionada.getId() + ")");
+                    
+                    if (g.getSubject() != null && g.getSubject().getId() == materiaSeleccionada.getId()) {
                         filtradas.add(g);
+                        Log.d("CalificacionesActivity", "✓ Coincidencia encontrada - Unidad: " + g.getUnitNumber() + ", Calificación: " + g.getGrade());
                     }
                 }
+                
+                Log.d("CalificacionesActivity", "Total de calificaciones filtradas: " + filtradas.size());
                 adapter.actualizarLista(filtradas);
             }
 
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
+            @Override public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("CalificacionesActivity", "Nada seleccionado en spinner");
+            }
         });
     }
 
