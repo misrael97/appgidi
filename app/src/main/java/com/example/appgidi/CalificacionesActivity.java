@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -279,7 +280,16 @@ public class CalificacionesActivity extends AppCompatActivity {
                     }
                 }
                 
-                Log.d("CalificacionesActivity", "Total de calificaciones filtradas: " + filtradas.size());
+                // Ordenar calificaciones por unidad de manera ascendente
+                filtradas.sort((g1, g2) -> Integer.compare(g1.getUnitNumber(), g2.getUnitNumber()));
+                
+                Log.d("CalificacionesActivity", "=== CALIFICACIONES ORDENADAS ===");
+                for (int i = 0; i < filtradas.size(); i++) {
+                    Grade g = filtradas.get(i);
+                    Log.d("CalificacionesActivity", "Posición " + (i+1) + ": Unidad " + g.getUnitNumber() + " - Calificación " + g.getGrade());
+                }
+                
+                Log.d("CalificacionesActivity", "Total de calificaciones filtradas y ordenadas: " + filtradas.size());
                 adapter.actualizarLista(filtradas);
             }
 
