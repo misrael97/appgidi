@@ -15,18 +15,22 @@ import com.example.appgidi.models.Grade;
 import java.util.List;
 import java.util.Map;
 
-public class GradeAdapter extends RecyclerView.Adapter<GradeAdapter.ViewHolder> {
+public class GradeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private static final int VIEW_TYPE_GRADE = 0;
+    private static final int VIEW_TYPE_AVERAGE = 1;
+    
     private List<Grade> gradeList;
+    private boolean showAverage = false;
 
     public GradeAdapter(List<Grade> gradeList) {
         this.gradeList = gradeList;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class GradeViewHolder extends RecyclerView.ViewHolder {
         TextView tvUnidad, tvCalificacion, tvProfesor;
 
-        public ViewHolder(View view) {
+        public GradeViewHolder(View view) {
             super(view);
             tvUnidad = view.findViewById(R.id.tvUnidad);
             tvCalificacion = view.findViewById(R.id.tvCalificacion);
@@ -34,47 +38,94 @@ public class GradeAdapter extends RecyclerView.Adapter<GradeAdapter.ViewHolder> 
         }
     }
 
-    @Override
-    public GradeAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.calificacion_scroll, parent, false);
-        return new ViewHolder(v);
+    public static class AverageViewHolder extends RecyclerView.ViewHolder {
+        TextView tvPromedio;
+
+        public AverageViewHolder(View view) {
+            super(view);
+            tvPromedio = view.findViewById(R.id.tvPromedio);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Grade grade = gradeList.get(position);
-        
-        Log.d("GradeAdapter", "=== MOSTRANDO CALIFICACIÓN ===");
-        Log.d("GradeAdapter", "Posición: " + position);
-        Log.d("GradeAdapter", "Materia: " + (grade.getSubject() != null ? grade.getSubject().getName() : "NULL"));
-        Log.d("GradeAdapter", "Unidad: " + grade.getUnitNumber());
-        Log.d("GradeAdapter", "Calificación: " + grade.getGrade());
-
-        // Mostrar nombre del profesor desde Map con manejo de nulos
-        if (grade.getTeacher() != null) {
-            Map<String, Object> teacher = grade.getTeacher();
-            String firstName = teacher.get("first_name") != null ? teacher.get("first_name").toString() : "";
-            String lastName = teacher.get("last_name") != null ? teacher.get("last_name").toString() : "";
-            String nombre = (firstName + " " + lastName).trim();
-            holder.tvProfesor.setText(nombre.isEmpty() ? "Sin profesor" : nombre);
-            Log.d("GradeAdapter", "Profesor: " + nombre);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_AVERAGE) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.calificacion_promedio, parent, false);
+            return new AverageViewHolder(v);
         } else {
-            holder.tvProfesor.setText("Sin profesor");
-            Log.d("GradeAdapter", "Profesor: NULL");
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.calificacion_scroll, parent, false);
+            return new GradeViewHolder(v);
         }
+    }
 
-        // Unidad
-        holder.tvUnidad.setText(String.valueOf(grade.getUnitNumber()));
+    @Override
+    public int getItemViewType(int position) {
+        if (showAverage && position == gradeList.size()) {
+            return VIEW_TYPE_AVERAGE;
+        }
+        return VIEW_TYPE_GRADE;
+    }
 
-        // Calificación
-        holder.tvCalificacion.setText(String.valueOf(grade.getGrade()));
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof GradeViewHolder) {
+            GradeViewHolder gradeHolder = (GradeViewHolder) holder;
+            Grade grade = gradeList.get(position);
+            
+            Log.d("GradeAdapter", "=== MOSTRANDO CALIFICACIÓN ===");
+            Log.d("GradeAdapter", "Posición: " + position);
+            Log.d("GradeAdapter", "Materia: " + (grade.getSubject() != null ? grade.getSubject().getName() : "NULL"));
+            Log.d("GradeAdapter", "Unidad: " + grade.getUnitNumber());
+            Log.d("GradeAdapter", "Calificación: " + grade.getGrade());
+
+            // Mostrar nombre del profesor desde Map con manejo de nulos
+            if (grade.getTeacher() != null) {
+                Map<String, Object> teacher = grade.getTeacher();
+                String firstName = teacher.get("first_name") != null ? teacher.get("first_name").toString() : "";
+                String lastName = teacher.get("last_name") != null ? teacher.get("last_name").toString() : "";
+                String nombre = (firstName + " " + lastName).trim();
+                gradeHolder.tvProfesor.setText(nombre.isEmpty() ? "Sin profesor" : nombre);
+                Log.d("GradeAdapter", "Profesor: " + nombre);
+            } else {
+                gradeHolder.tvProfesor.setText("Sin profesor");
+                Log.d("GradeAdapter", "Profesor: NULL");
+            }
+
+            // Unidad
+            gradeHolder.tvUnidad.setText(String.valueOf(grade.getUnitNumber()));
+
+            // Calificación
+            gradeHolder.tvCalificacion.setText(String.valueOf(grade.getGrade()));
+            
+            Log.d("GradeAdapter", "=== FIN MOSTRANDO CALIFICACIÓN ===");
+        } else if (holder instanceof AverageViewHolder) {
+            AverageViewHolder averageHolder = (AverageViewHolder) holder;
+            double promedio = calcularPromedio();
+            averageHolder.tvPromedio.setText(String.format("%.2f", promedio));
+            Log.d("GradeAdapter", "=== MOSTRANDO PROMEDIO ===");
+            Log.d("GradeAdapter", "Promedio calculado: " + promedio);
+        }
+    }
+
+    private double calcularPromedio() {
+        if (gradeList.isEmpty()) {
+            return 0.0;
+        }
         
-        Log.d("GradeAdapter", "=== FIN MOSTRANDO CALIFICACIÓN ===");
+        double suma = 0.0;
+        for (Grade grade : gradeList) {
+            suma += grade.getGrade();
+        }
+        return suma / gradeList.size();
     }
 
     @Override
     public int getItemCount() {
-        return gradeList != null ? gradeList.size() : 0;
+        int count = gradeList != null ? gradeList.size() : 0;
+        if (showAverage && count > 0) {
+            count += 1; // Agregar una posición extra para el promedio
+        }
+        return count;
     }
 
     public void actualizarLista(List<Grade> nuevas) {
@@ -88,6 +139,7 @@ public class GradeAdapter extends RecyclerView.Adapter<GradeAdapter.ViewHolder> 
         }
         
         this.gradeList = nuevas;
+        this.showAverage = !nuevas.isEmpty(); // Mostrar promedio solo si hay calificaciones
         notifyDataSetChanged();
         Log.d("GradeAdapter", "=== LISTA ACTUALIZADA ===");
     }
